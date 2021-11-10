@@ -10,22 +10,81 @@ library(maptools)
 library(tidyverse)
 library(rgdal)
 library(ggspatial)
+library(rgbif)
+library(cowplot)
+library(maps)
+library(utils)
+library(dismo)
 ```
 
 ```{r}
 state <- map_data("state")
-Ch <- data.frame("x" = -84.133333, "y" = 35.557778)
-rotary_point <- data.frame("x" = -87.271600, "y" = 36.501317)
-cheatham_point <- data.frame("x" = -87.063088, "y" = 36.188858)
-schiller_point <- data.frame("x" = -87.314360, "y" = 36.437066)
+county <- map_data("county")
 
-ggplot() + geom_polygon(data = state, aes(x=long, y = lat, group = group),
-                        fill = "white", color="black") + 
-           geom_point(data = Ch, aes(x=x,y=y), color="gray", size=4) +
-           geom_point(data = schiller_point, aes(x=x,y=y), color="black", size=3) + 
-           geom_point(data = rotary_point, aes(x=x,y=y), color="red") +
-           geom_point(data = cheatham_point, aes(x=x,y=y), color="green") +
-  coord_fixed(xlim = c(-88, -81.8),  ylim = c(34.8, 37), ratio = 1.2) + 
-  xlab("Longitude") + ylab("Latitude") + ggtitle("Algae Collection Sites, TN")
+tn <- county %>% 
+  filter(region=="tennessee")
+
+Ch <- data.frame("x" = -84.011111, "y" = 35.557778)
+No <- data.frame("x" = -83.908590, "y" = 36.287789)
+Te <- data.frame("x" = -84.253588, "y" = 35.765974)
+Oc <- data.frame("x" = -84.588056, "y" = 35.114722)
+Mc <- data.frame("x" = -84.714822, "y" = 35.232405)
+Ni <- data.frame("x" = -85.564167, "y" = 35.030000)
+Sw <- data.frame("x" = -87.308611, "y" = 36.550556)
+PP <- data.frame("x" = -86.499722, "y" = 36.033056)
+GC <- data.frame("x" = -84.131389, "y" = 35.298889)
+OH <- data.frame("x" = -86.482222, "y" = 36.332778)
+
+Nashville <- data.frame("x" = -86.756443, "y" = 36.151945)
+Chattanooga <- data.frame("x" = -85.262046, "y" = 35.053821)
+Knoxville <- data.frame("x" = -83.944318, "y" = 35.981720)
 ```
 
+```{r}
+map1 <- ggplot() + geom_polygon(data = state, aes(x=long, y = lat, group = group),
+                        fill = "white", color="black") + 
+          geom_point(data = Ch, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = No, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) + 
+          geom_point(data = Te, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = Oc, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = Mc, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = Ni, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = Sw, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = PP, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = GC, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = OH, aes(x=x,y=y), shape=1, fill="white", color="black", size=5) +
+          geom_point(data = Nashville, aes(x=x,y=y), shape=20, size=4) +
+          geom_point(data = Chattanooga, aes(x=x,y=y), shape=16, , size=4) +
+          geom_point(data = Knoxville, aes(x=x,y=y), shape=16, , size=4) +
+  coord_fixed(xlim = c(-88, -81.8),  ylim = c(34.8, 37), ratio = 1.2) + 
+  xlab("Longitude") + ylab("Latitude") + ggtitle("Algae Collection Sites, TN") +
+  guides(color=guide_legend("Legend", override.aes = list(size = 4))) +
+  theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.position = "bottom") +
+  theme(legend.title.align = 0.5, legend.box.just = "center") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+#shape="\u2605" for 5-point star
+map1
+ggsave(plot=map1, filename="map.png", width=10, height=6)
+```
+```{r inset mapp}
+inset <- ggplot() + 
+  geom_polygon(data = state, aes(x=long, y = lat, group = group),
+               fill = "lightgray", color="white") +
+        geom_polygon(data = tn, aes(x=long, y = lat, group = group),
+               fill = "darkgray", color="darkgray") +
+  coord_map(xlim = c(-92.2, -79.7),  ylim = c(32.6, 39), "polyconic") +
+  theme(panel.background = element_rect(fill = "lightblue"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        axis.line=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank(),axis.ticks=element_blank(), 
+        axis.title.x=element_blank(), axis.title.y=element_blank()) +
+theme(plot.margin=grid::unit(c(0,0,0,0), "mm"))
+inset
+```
+
+```{r final map, echo=TRUE, message=FALSE, warning=FALSE}
+ggdraw() +
+draw_plot(map1) + 
+draw_plot(inset, x = 0.025, y = 0.015, width = 0.3, height = 0.3)
+```
