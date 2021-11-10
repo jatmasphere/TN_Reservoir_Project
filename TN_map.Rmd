@@ -1,0 +1,31 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(leaflet)
+library(mapdata)
+library(maptools)
+library(tidyverse)
+library(rgdal)
+library(ggspatial)
+```
+
+```{r}
+state <- map_data("state")
+Ch <- data.frame("x" = -84.133333, "y" = 35.557778)
+rotary_point <- data.frame("x" = -87.271600, "y" = 36.501317)
+cheatham_point <- data.frame("x" = -87.063088, "y" = 36.188858)
+schiller_point <- data.frame("x" = -87.314360, "y" = 36.437066)
+
+ggplot() + geom_polygon(data = state, aes(x=long, y = lat, group = group),
+                        fill = "white", color="black") + 
+           geom_point(data = Ch, aes(x=x,y=y), color="gray", size=4) +
+           geom_point(data = schiller_point, aes(x=x,y=y), color="black", size=3) + 
+           geom_point(data = rotary_point, aes(x=x,y=y), color="red") +
+           geom_point(data = cheatham_point, aes(x=x,y=y), color="green") +
+  coord_fixed(xlim = c(-88, -81.8),  ylim = c(34.8, 37), ratio = 1.2) + 
+  xlab("Longitude") + ylab("Latitude") + ggtitle("Algae Collection Sites, TN")
+```
+
